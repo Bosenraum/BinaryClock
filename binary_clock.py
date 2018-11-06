@@ -1,6 +1,7 @@
 import tkinter as tk
 from threading import Thread
 import time
+from datetime import datetime
 
 second_text = ""
 minute_text = ""
@@ -111,12 +112,17 @@ def thread_test():
     global hour_text
     global bg_color
 
-    sec_one = 0
-    sec_ten = 0
-    min_one = 5
-    min_ten = 2
-    hr_one  = 6
-    hr_ten  = 1
+    cur_time = str(datetime.time(datetime.now())).split(":")
+    hr  = int(cur_time[0])
+    min = int(cur_time[1])
+    sec = round(float(cur_time[2]))
+
+    sec_ten = sec // 10
+    sec_one = sec - (10 * sec_ten)
+    min_ten = min // 10
+    min_one = min - (10 * min_ten)
+    hr_ten  = hr // 10
+    hr_one  = hr - (10 * hr_ten)
 
     while(True):
         if sec_one < 9:
