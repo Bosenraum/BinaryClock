@@ -5,7 +5,7 @@ import time
 second_text = ""
 minute_text = ""
 hour_text = ""
-bg_color = "#000000"
+bg_color = ""
 
 class Application(tk.Frame):
 
