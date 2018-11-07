@@ -6,7 +6,15 @@ from datetime import datetime
 second_text = ""
 minute_text = ""
 hour_text = ""
-bg_color = "#000000"
+
+second_color = 0
+minute_color = 0
+hour_color   = 0
+
+minute_active = False
+hour_active = False
+
+bg_color = ""
 stop = False
 
 class Application(tk.Frame):
@@ -84,6 +92,7 @@ class Application(tk.Frame):
         self.master.after(0, self.update)
 
     def update(self):
+        bg_color = "#" + format(int(hour_color), "02X") + format(int(minute_color), "02X") + format(int(second_color), "02X")
 
         self.second["text"] = second_text
         self.second["bg"] = bg_color
@@ -150,47 +159,83 @@ def thread_test():
         hr_ten  = hr // 10
         hr_one  = hr - (10 * hr_ten)
 
+        # Format time for BCD
         second_text = format(sec_ten, "04b") + " " + format(sec_one, "04b")
         minute_text = format(min_ten, "04b") + " " + format(min_one, "04b")
         hour_text = format(hr_ten, "04b") + " " + format(hr_one, "04b")
-
-        c1 = (int(bg_color[1:3], 16), int(bg_color[3:5], 16), int(bg_color[5:], 16))
 
         second_color = int((255 / 60) * sec)
         minute_color = int((255 / 60) * min)
         hour_color   = int((255 / 24) * hr)
 
-        c2 = (hour_color, minute_color, second_color)
+        if not bg_color == "":
+            c1 = (int(bg_color[1:3], 16), int(bg_color[3:5], 16), int(bg_color[5:], 16))
+        else:
+            c1 = (second_color, minute_color, hour_color)
+
+        # c2 = (hour_color, minute_color, second_color)
 
         #bg_color = "#" + hour_color + minute_color + second_color
+        if not minute_active:
+            minute_color_change(c1[1], minute_color, 100)
+        if not hour_active:
+            hour_color_change(c1[2], hour_color, 100)
 
-        color_fade(c1, c2, 1, 100)
+        second_fade(c1[0], second_color, 100)
     # for _ in range(10):
     #     print("Threaded")
-def color_fade(c1, c2, transition_time, steps=100):
-    global bg_color
+def second_fade(b1, b2, steps=100):
+    global second_color
 
-    delta_r = (c1[0] - c2[0]) / steps
-    delta_g = (c1[1] - c2[1]) / steps
-    delta_b = (c1[2] - c2[2]) / steps
-    # print(f"({delta_r}, {delta_g}, {delta_b})")
+    delta_b = (b1 - b2) / steps
+    b = b1
 
-    transition_step = transition_time / steps
-    r = c1[0]
-    g = c1[1]
-    b = c1[2]
-    # print(f"({r}, {g}, {b})")
+    for _ in range(steps):
+        b -= delta_b
+        second_color = b
+        time.sleep(1/steps)
+
+def minute_color_change(g1, g2, steps=100):
+    global minute_active
+    minute_active = True
+    minute_thread = Thread(target=lambda: minute_fade(g1, g2, steps))
+    print("Starting minute thread")
+    minute_thread.start()
+
+def minute_fade(g1, g2, steps=100):
+    global minute_active
+    global minute_color
+
+    delta_g = (g1 - g2) / steps
+    g = g1
+
+    for _ in range(steps):
+        g -= delta_g
+        minute_color = round(g)
+        time.sleep(60/steps)
+
+    minute_active = False
+
+def hour_color_change(r1, r2, steps=100):
+    global hour_active
+    hour_active = True
+    hour_thread = Thread(target=lambda: hour_fade(r1, r2, steps))
+    print("Starting hour thread")
+    hour_thread.start()
+
+def hour_fade(r1, r2, steps=100):
+    global hour_active
+    global hour_color
+
+    delta_r = (r1 - r2) / steps
+    r = r1
 
     for _ in range(steps):
         r -= delta_r
-        g -= delta_g
-        b -= delta_b
-        ro = format(round(r), "02X")
-        go = format(round(g), "02X")
-        bo = format(round(b), "02X")
+        hour_color = round(r)
+        time.sleep(3600/steps)
 
-        bg_color = "#" + ro + go + bo
-        time.sleep(transition_step)
+    hour_active = False
 
 test_thread = Thread(target=thread_test)
 test_thread.start()
