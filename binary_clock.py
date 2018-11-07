@@ -6,7 +6,8 @@ from datetime import datetime
 second_text = ""
 minute_text = ""
 hour_text = ""
-bg_color = ""
+bg_color = "#000000"
+stop = False
 
 class Application(tk.Frame):
 
@@ -20,6 +21,8 @@ class Application(tk.Frame):
 
     def create_widgets(self):
         global second_text, minute_text, hour_text
+
+        # self.winfo_toplevel().title("Binary Color Clock")
 
         self.hello = tk.Button(self)
         self.hello["text"] = "Click here!"
@@ -101,10 +104,22 @@ class Application(tk.Frame):
         self.blank3["bg"] = bg_color
         self.blank4["bg"] = bg_color
         self.master.configure(background=bg_color)
-        self.master.after(100, self.update)
+        self.master.after(10, self.update)
 
     def say_hi(self):
         print("Hello World!")
+
+def _delete_window():
+    #print("Delete Window")
+    try:
+        root.destroy()
+    except:
+        pass
+
+def _destroy(event):
+    global stop
+    #print("Destroy")
+    stop = True
 
 def thread_test():
     global second_text
@@ -112,10 +127,9 @@ def thread_test():
     global hour_text
     global bg_color
 
-    cur_time = str(datetime.time(datetime.now())).split(":")
-    hr  = int(cur_time[0])
-    min = int(cur_time[1])
-    sec = round(float(cur_time[2]))
+    hr  = datetime.now().hour
+    min = datetime.now().minute
+    sec = datetime.now().second
 
     sec_ten = sec // 10
     sec_one = sec - (10 * sec_ten)
@@ -124,51 +138,68 @@ def thread_test():
     hr_ten  = hr // 10
     hr_one  = hr - (10 * hr_ten)
 
-    while(True):
-        if sec_one < 9:
-            sec_one += 1
-        else:
-            sec_one = 0
-            if sec_ten < 5:
-                sec_ten += 1
-            else:
-                sec_ten = 0
-                if min_one < 9:
-                    min_one += 1
-                else:
-                    min_one = 0
-                    if min_ten < 5:
-                        min_ten += 1
-                    else:
-                        min_ten = 0
-                        if hr_one < 9 and hr_ten < 2:
-                            hr_one += 1
-                        elif hr_ten == 2 and hr_one < 4:
-                            hr_one += 1
-                        else:
-                            hr_one = 0
-                            if hr_ten < 2:
-                                hr_ten += 1
-                            else:
-                                hr_ten = 0
-        #print(second_text)
+    while(not stop):
+        hr  = datetime.now().hour
+        min = datetime.now().minute
+        sec = datetime.now().second
+
+        sec_ten = sec // 10
+        sec_one = sec - (10 * sec_ten)
+        min_ten = min // 10
+        min_one = min - (10 * min_ten)
+        hr_ten  = hr // 10
+        hr_one  = hr - (10 * hr_ten)
+
         second_text = format(sec_ten, "04b") + " " + format(sec_one, "04b")
         minute_text = format(min_ten, "04b") + " " + format(min_one, "04b")
         hour_text = format(hr_ten, "04b") + " " + format(hr_one, "04b")
 
-        second_color = format(int((255 / 60) * (10*sec_ten + sec_one)), "02X")
-        minute_color = format(int((255 / 60) * (10*min_ten + min_one)), "02X")
-        hour_color = format(int((255 / 24) * (10*hr_ten + hr_one)), "02X")
+        c1 = (int(bg_color[1:3], 16), int(bg_color[3:5], 16), int(bg_color[5:], 16))
 
-        bg_color = "#" + hour_color + minute_color + second_color
+        second_color = int((255 / 60) * sec)
+        minute_color = int((255 / 60) * min)
+        hour_color   = int((255 / 24) * hr)
 
-        time.sleep(1)
+        c2 = (hour_color, minute_color, second_color)
+
+        #bg_color = "#" + hour_color + minute_color + second_color
+
+        color_fade(c1, c2, 1, 100)
     # for _ in range(10):
     #     print("Threaded")
+def color_fade(c1, c2, transition_time, steps=100):
+    global bg_color
+
+    delta_r = (c1[0] - c2[0]) / steps
+    delta_g = (c1[1] - c2[1]) / steps
+    delta_b = (c1[2] - c2[2]) / steps
+    # print(f"({delta_r}, {delta_g}, {delta_b})")
+
+    transition_step = transition_time / steps
+    r = c1[0]
+    g = c1[1]
+    b = c1[2]
+    # print(f"({r}, {g}, {b})")
+
+    for _ in range(steps):
+        r -= delta_r
+        g -= delta_g
+        b -= delta_b
+        ro = format(round(r), "02X")
+        go = format(round(g), "02X")
+        bo = format(round(b), "02X")
+
+        bg_color = "#" + ro + go + bo
+        time.sleep(transition_step)
 
 test_thread = Thread(target=thread_test)
 test_thread.start()
 
 root = tk.Tk()
+img = tk.Image("photo", file="clock.png")
+root.tk.call("wm", "iconphoto", root._w,img)
+root.title("Binary Color Clock")
+root.protocol("WM_DELETE_WINDOW", _delete_window)
+root.bind("<Destroy>", _destroy)
 app = Application(master=root)
 app.mainloop()
