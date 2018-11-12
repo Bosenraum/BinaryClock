@@ -2,6 +2,7 @@
 #TODO: Add a "Save Color" button that captures the current color value and saves it to a text file (e.g. saved_colors.txt)
 #TODO: Change the foreground (text) color dynamically to have better contrast with any given background color
 #TODO: Make color lable larger, consider changing font
+#TODO: Remove title bar and use small quit button instead
 
 import tkinter as tk
 from threading import Thread
