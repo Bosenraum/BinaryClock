@@ -201,7 +201,7 @@ def color_fade(c1, c2, transition_time, steps=100):
 
     delta_r = (c1[0] - c2[0]) / (steps * 3600)
     delta_g = (c1[1] - c2[1]) / (steps * 60)
-    delta_b = (c1[2] - c2[2]) / (steps)
+    delta_b = (c1[2] - c2[2]) / (steps * 5)
     # print(f"C1: {c1} -- C2: {c2}")
     # print(f"({delta_r}, {delta_g}, {delta_b})")
 
