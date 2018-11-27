@@ -140,7 +140,7 @@ def _destroy(event):
     #print("Destroy")
     stop = True
 
-def thread_test():
+def timer():
     global second_text, second_color
     global minute_text, minute_color
     global hour_text, hour_color
@@ -226,8 +226,8 @@ def color_fade(c1, c2, transition_time, steps=100):
         # bg_color = "#" + ro + go + bo
         time.sleep(transition_step)
 
-test_thread = Thread(target=thread_test)
-test_thread.start()
+time_thread = Thread(target=timer)
+time_thread.start()
 
 root = tk.Tk()
 img = tk.Image("photo", file="clock.png")
